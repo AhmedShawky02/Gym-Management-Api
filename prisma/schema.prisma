@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model booking_statuses {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(50)
+  bookings bookings[]
+}
+
+model bookings {
+  id               Int               @id @default(autoincrement())
+  user_id          Int
+  trainer_id       Int?
+  class_id         Int?
+  booking_date     DateTime?         @default(now()) @db.Timestamp(6)
+  status_id        Int?              @default(1)
+  classes          classes?          @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  booking_statuses booking_statuses? @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trainers         trainers?         @relation(fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users            users             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payments         payments[]
+}
+
+model classes {
+  id          Int        @id @default(autoincrement())
+  trainer_id  Int
+  title       String     @db.VarChar(100)
+  description String
+  created_at  DateTime   @default(now()) @db.Timestamp(6)
+  capacity    Int        @default(20)
+  price       Decimal    @default(0.00) @db.Decimal(10, 2)
+  start_time  String
+  end_time    String
+  class_date  DateTime   @db.Timestamp(6)
+  bookings    bookings[]
+  trainers    trainers   @relation(fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model gallery {
+  id          Int       @id @default(autoincrement())
+  image_url   String    @db.VarChar(255)
+  title       String?   @db.VarChar(100)
+  description String?
+  uploaded_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model gender_types {
+  id    Int     @id @default(autoincrement())
+  name  String  @db.VarChar(50)
+  users users[]
+}
+
+model packages {
+  id               Int        @id @default(autoincrement())
+  name             String     @unique(map: "unique_package_name") @db.VarChar(100)
+  description      String
+  price            Decimal    @db.Decimal(10, 2)
+  duration_in_days Int
+  payments         payments[]
+}
+
+model payment_statuses {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique @db.VarChar(50)
+  payments payments[]
+}
+
+model payments {
+  id               Int              @id @default(autoincrement())
+  user_id          Int
+  cart_id          Int?
+  package_id       Int?
+  booking_id       Int?
+  amount           Decimal          @db.Decimal(10, 2)
+  status_id        Int
+  paymob_order_id  Int?             @unique
+  paid_at          DateTime?        @db.Timestamp(6)
+  payment_items    payment_items[]
+  bookings         bookings?        @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  carts            carts?           @relation(fields: [cart_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  packages         packages?        @relation(fields: [package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payment_statuses payment_statuses @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users            users            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model persons {
+  id            Int       @id @default(autoincrement())
+  first_name    String    @db.VarChar(50)
+  middle_name   String?   @db.VarChar(50)
+  last_name     String?   @db.VarChar(50)
+  date_of_birth DateTime? @db.Date
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  users         users?
+}
+
+model refresh_tokens {
+  id      Int      @id @default(autoincrement())
+  token   String   @unique @db.VarChar(255)
+  user_id Int
+  expiry  DateTime @db.Timestamp(6)
+  users   users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model reviews {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  trainer_id Int?
+  rating     Int
+  comment    String
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  trainers   trainers? @relation(fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model roles {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique @db.VarChar(50)
+  user_roles user_roles[]
+}
+
+model supplements {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String
+  image_url   String    @db.VarChar(255)
+  capacity    Int       @default(0)
+  price       Decimal   @default(0.00) @db.Decimal(10, 2)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model support_statuses {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique @db.VarChar(50)
+  supports supports[]
+}
+
+model supports {
+  id               Int              @id @default(autoincrement())
+  user_id          Int
+  trainer_id       Int?
+  status_id        Int
+  subject          String           @db.VarChar(100)
+  message          String
+  created_at       DateTime?        @default(now()) @db.Timestamp(6)
+  support_statuses support_statuses @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trainers         trainers?        @relation(fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users            users            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model trainer_availability {
+  id          Int       @id @default(autoincrement())
+  trainer_id  Int
+  week_day_id Int
+  start_time  String
+  end_time    String
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  trainers    trainers  @relation(fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  week_days   week_days @relation(fields: [week_day_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model trainers {
+  id                    Int                    @id @default(autoincrement())
+  bio                   String
+  experience_years      Int
+  specialization        String                 @db.VarChar(100)
+  user_id               Int                    @unique
+  private_monthly_price Decimal                @default(0.00) @db.Decimal(10, 2)
+  created_at            DateTime               @default(now()) @db.Timestamp(6)
+  bookings              bookings[]
+  classes               classes[]
+  reviews               reviews[]
+  supports              supports[]
+  trainer_availability  trainer_availability[]
+  users                 users                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_roles {
+  user_role_id Int    @id @default(autoincrement())
+  user_id      Int?
+  role_id      Int?
+  roles        roles? @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users        users? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_id, role_id])
+}
+
+model users {
+  id                 Int              @id @default(autoincrement())
+  email              String           @unique @db.VarChar(255)
+  password_hash      String
+  person_id          Int              @unique
+  gender_type_id     Int
+  profile_picture    String?
+  email_verified     Boolean?         @default(false)
+  email_token        String?          @db.VarChar(255)
+  email_token_expiry DateTime?        @db.Timestamp(6)
+  otp_code           String?          @db.VarChar(6)
+  otp_code_expiry    DateTime?        @db.Timestamp(6)
+  bookings           bookings[]
+  carts              carts?
+  payments           payments[]
+  refresh_tokens     refresh_tokens[]
+  reviews            reviews[]
+  supports           supports[]
+  trainers           trainers?
+  user_roles         user_roles[]
+  gender_types       gender_types     @relation(fields: [gender_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  persons            persons          @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model week_days {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @unique @db.VarChar(20)
+  trainer_availability trainer_availability[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model cart_items {
+  id           Int       @id @default(autoincrement())
+  cart_id      Int
+  product_type String    @db.VarChar(50)
+  product_id   Int
+  quantity     Int
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  carts        carts     @relation(fields: [cart_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([cart_id, product_type, product_id])
+}
+
+model carts {
+  id         Int          @id @default(autoincrement())
+  user_id    Int          @unique
+  created_at DateTime?    @default(now()) @db.Timestamp(6)
+  cart_items cart_items[]
+  users      users        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payments   payments[]
+}
+
+model payment_items {
+  id             Int      @id @default(autoincrement())
+  payment_id     Int
+  product_type   String   @db.VarChar(50)
+  product_id     Int
+  quantity       Int
+  price_snapshot Decimal  @db.Decimal(10, 2)
+  payments       payments @relation(fields: [payment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
