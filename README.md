@@ -1,7 +1,7 @@
 
 <img width="1637" height="819" alt="image" src="https://github.com/user-attachments/assets/84917da5-fcde-499e-a69c-88f6a5f2813a" />
 
-## Gym Management System – Web Application
+### Gym Management System – Web Application
 
 ### **Overview**
 
