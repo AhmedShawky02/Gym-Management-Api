@@ -44,7 +44,6 @@ export async function getAllSupplements(): Promise<ISupplementDto[]> {
         supplements.map(async (supplement) => {
             
             const countPaid: number = await SupplementRepo.countPaidPaymentsBySupplementId(supplement.id);
-            console.log(countPaid)// 0
             const remaining_quantity = supplement.capacity - (countPaid ?? 0);
             return mapSupplementToDto(supplement, remaining_quantity);
         })

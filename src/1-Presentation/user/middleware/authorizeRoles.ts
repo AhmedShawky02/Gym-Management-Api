@@ -6,7 +6,7 @@ export function authorizeRoles(allowedRoles: string[]) {
         const user = req.user as { userId: number; roles: string[] } | undefined;
 
         if (!user || !user.roles) {
-            res.status(403).json({ message: "Forbidden" });
+            res.status(401).json({ message: "Unauthorized" });
             return
         }
 

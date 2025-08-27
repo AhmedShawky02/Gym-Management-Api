@@ -10,6 +10,6 @@ export interface IUsersDto {
         middle_name: string | null,
         last_name: string | null,
         created_at: Date | null
-
+        date_of_birth: Date | null
     }
 }

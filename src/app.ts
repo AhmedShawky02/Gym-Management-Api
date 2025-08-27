@@ -13,6 +13,7 @@ import adminTrainerRoutes from "./1-Presentation/trainer/routes/adminTrainerRout
 import trainerProfileRoutes from "./1-Presentation/trainer/routes/trainerProfileRoutes.js";
 import trainerAvailabilityRoutes from "./1-Presentation/trainer/routes/trainerAvailabilityRoutes.js"
 import publicTrainerAvailabilityRoutes from "./1-Presentation/trainer/routes/publicTrainerAvailabilityRoutes.js";
+import publicTrainerRoutes from "./1-Presentation/trainer/routes/publicTrainerRoutes.js";
 import classRoutes from "./1-Presentation/class/routes/classesRoutes.js";
 import publicClassesRoutes from "./1-Presentation/class/routes/publicClassesRoutes.js";
 import bookingAdminRoutes from "./1-Presentation/booking/routes/bookingAdminRoutes.js";
@@ -40,10 +41,12 @@ import { publicLimiter, authenticatedLimiter } from "./shared/middleware/rateLim
 //----------------------------------------------------------------------------------
 
 const app: Express = express();
+
 app.use(cors({
-    origin: "http://localhost:5173", // رابط الفرونت إند
+    origin: "http://localhost:5173",
     credentials: true
 }));
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -52,11 +55,12 @@ app.use("/api/auth", publicLimiter, authRoutes) //------------------------------
 app.use("/api/payments", publicLimiter, paymentRoutes); // WeebHook ---------------------------------------------------------------------✅
 
 // Public GET
-app.use("/api/public/trainers", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, publicTrainerAvailabilityRoutes); //--✅
-app.use("/api/user/packages", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, publicPackageRoutes); //----------------✅
-app.use("/api/user/classes", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, publicClassesRoutes); //-----------------✅
-app.use("/api/user/supplement", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, userSupplementRoutes); //-------------✅
-app.use("/api/user/gallery", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, userGalleryRoutes); //-------------------✅
+app.use("/api/public/trainers-availability", authenticatedLimiter, publicTrainerAvailabilityRoutes); //----------------------------------✅
+app.use("/api/public/trainers", authenticatedLimiter, publicTrainerRoutes); //-----------------------------------------------------------✅
+app.use("/api/user/packages", authenticatedLimiter, publicPackageRoutes); //-------------------------------------------------------------✅
+app.use("/api/user/classes", authenticatedLimiter, publicClassesRoutes); //--------------------------------------------------------------✅
+app.use("/api/user/supplement", authenticatedLimiter, userSupplementRoutes); //----------------------------------------------------------✅
+app.use("/api/user/gallery", authenticatedLimiter, userGalleryRoutes); //----------------------------------------------------------------✅
 
 //User GET POST PUT DELETE
 app.use("/api/user/profile", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, profileRoutes); //-----------------------✅

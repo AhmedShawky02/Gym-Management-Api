@@ -10,9 +10,10 @@ export const mapUserWithPersonAndRolesToDto = (user: UserWithPersonAndRoles): IU
         id: user.id,
         fullName: user.persons.first_name + " " + user.persons.middle_name + " " + user.persons.last_name,
         email: user.email,
-        createdDate: user.persons.created_at ? new Date(user.persons.created_at).toLocaleDateString("en-GB") : null,
+        createdDate: user.persons.created_at?.toISOString() ?? null,
         gender: user.gender_type_id === 1 ? "male" : "female",
         profile_picture: user.profile_picture ?? " ",
+        date_of_birth: user.persons.date_of_birth,
         roles: user.user_roles?.map(ur => ur.roles?.name ?? "") ?? [],
     }
 }
@@ -22,9 +23,10 @@ export const mapUsesrsAndPersonToDto = (users: IUsersDto[]): IUserBasicDto[] => 
         id: user.id,
         fullName: user.persons.first_name + " " + user.persons.middle_name + " " + user.persons.last_name,
         email: user.email,
-        createdDate: user.persons.created_at ? new Date(user.persons.created_at).toLocaleDateString("en-GB") : null,
+        createdDate: user.persons.created_at?.toISOString() ?? null,
         profile_picture: user.profile_picture ?? " ",
         gender: user.gender_type_id === 1 ? "male" : "female",
+        date_of_birth: user.persons.date_of_birth,
     }))
 }
 
@@ -33,8 +35,9 @@ export const mapUserAndPersonToDto = (user: IUsersDto): IUserBasicDto => {
         id: user.id,
         fullName: user.persons.first_name + " " + user.persons.middle_name + " " + user.persons.last_name,
         email: user.email,
-        createdDate: user.persons.created_at ? new Date(user.persons.created_at).toLocaleDateString("en-GB") : null,
+        createdDate: user.persons.created_at?.toISOString() ?? null,
         profile_picture: user.profile_picture ?? " ",
+        date_of_birth: user.persons.date_of_birth,
         gender: user.gender_type_id === 1 ? "male" : "female",
     }
 }
@@ -44,9 +47,10 @@ export const mapUserAndTrainerToDto = (user: IUsersDto, trainer: ITrainerDto): I
         id: user.id,
         fullName: user.persons.first_name + " " + user.persons.middle_name + " " + user.persons.last_name,
         email: user.email,
-        createdDate: user.persons.created_at ? new Date(user.persons.created_at).toLocaleDateString("en-GB") : null,
+        createdDate: user.persons.created_at?.toISOString() ?? null,
         profile_picture: user.profile_picture ?? " ",
         gender: user.gender_type_id === 1 ? "male" : "female",
+        date_of_birth: user.persons.date_of_birth,
         trainerInfo: trainer ? {
             trainer_Id: trainer.id,
             bio: trainer.bio,

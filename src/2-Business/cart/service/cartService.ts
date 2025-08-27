@@ -57,8 +57,42 @@ export async function addToCart(userId: number, data: IAddToCart): Promise<ICart
         throw new HttpError("Failed to add item to cart", 500);
     }
 
-    return mapCartItemToDto(item);
+    let productDetails = null;
+    if (data.product_type === "supplement") {
+        productDetails = await SupplementRepo.getSupplementById(data.product_id);
+    }
+
+    return mapCartItemToDto(item, productDetails);
+
 }
+
+export async function updateCartItem(userId: number, itemId: number, data: IUpdateCartItem): Promise<ICartItemDto | undefined> {
+    const existingItem = await CartRepo.getCartItemById(itemId);
+
+    if (!existingItem || existingItem.carts.user_id !== userId) {
+        throw new HttpError("Item not found or unauthorized", 404);
+    }
+
+    if (data.quantity === undefined) {
+        throw new HttpError("Quantity is required", 400);
+    }
+
+    if (data.quantity <= 0) {
+        throw new HttpError("Quantity must be greater than 0", 400);
+    }
+
+    const updated: ICartItem = await CartRepo.updateCartItem(itemId, data.quantity);
+
+    let productDetails = null;
+
+    if (updated.product_type === "supplement") {
+        productDetails = await SupplementRepo.getSupplementById(updated.product_id);
+    }
+
+    return mapCartItemToDto(updated, productDetails);
+
+}
+
 
 export async function getAllCartItem(userId: number): Promise<ICartItemDto[]> {
     const user: IUsersDto | null = await UserRepo.getUserById(userId);
@@ -91,32 +125,6 @@ export async function getAllCartItem(userId: number): Promise<ICartItemDto[]> {
     return enrichedItems
 }
 
-export async function updateCartItem(userId: number, itemId: number, data: IUpdateCartItem): Promise<ICartItemDto | undefined> {
-    const existingItem = await CartRepo.getCartItemById(itemId);
-
-    if (!existingItem || existingItem.carts.user_id !== userId) {
-        throw new HttpError("Item not found or unauthorized", 404);
-    }
-
-    if (data.quantity === undefined) {
-        throw new HttpError("Quantity is required", 400);
-    }
-
-    if (data.quantity <= 0) {
-        throw new HttpError("Quantity must be greater than 0", 400);
-    }
-
-    const updated: ICartItem = await CartRepo.updateCartItem(itemId, data.quantity);
-
-    let productDetails = null;
-
-    if (updated.product_type === "supplement") {
-        productDetails = await SupplementRepo.getSupplementById(updated.product_id);
-    }
-
-    return mapCartItemToDto(updated, productDetails);
-
-}
 
 export async function removeCartItem(userId: number, itemId: number): Promise<void> {
     const existingItem = await CartRepo.getCartItemById(itemId);

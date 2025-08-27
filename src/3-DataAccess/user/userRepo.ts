@@ -17,7 +17,9 @@ export async function getAllUsers(): Promise<IUsersDto[]> {
                     first_name: true,
                     middle_name: true,
                     last_name: true,
-                    created_at: true
+                    created_at: true,
+                    date_of_birth: true
+
                 }
             }
         }
@@ -70,7 +72,8 @@ export async function getUserById(userId: number): Promise<IUsersDto | null> {
                     first_name: true,
                     middle_name: true,
                     last_name: true,
-                    created_at: true
+                    created_at: true,
+                    date_of_birth: true
                 }
             }
         }
@@ -97,7 +100,8 @@ export async function updateUser(UserData: IUpdateUserRequest, userId: number): 
                     first_name: true,
                     middle_name: true,
                     last_name: true,
-                    created_at: true
+                    created_at: true,
+                    date_of_birth: true
                 }
             }
         }

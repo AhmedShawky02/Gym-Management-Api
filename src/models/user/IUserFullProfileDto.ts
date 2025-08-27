@@ -7,6 +7,7 @@ export interface IUserFullProfileDto {
     createdDate: string | null;
     gender: string;
     profile_picture?: string;
+    date_of_birth: Date | null
     trainerInfo?: {
         trainer_Id: number;
         bio: string | null;

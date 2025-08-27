@@ -5,5 +5,6 @@ export interface IUserDto {
         createdDate: string | null,
         gender: string,
         profile_picture: string,
+        date_of_birth: Date | null
         roles?: string[]
 }

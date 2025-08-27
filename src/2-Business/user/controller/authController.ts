@@ -36,14 +36,16 @@ export async function login(req: Request, res: Response) {
         const refreshToken = authService.generateRefreshToken(userDto);
         await authService.storeRefresh(userDto.id, refreshToken);
 
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: false, // http = false || https = true
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        // res.cookie("refreshToken", refreshToken, {
+        //     httpOnly: true,
+        //     secure: false, 
+        //     sameSite: "lax",
+        //     path: "/",
+        //     domain: "localhost"
+        //     maxAge: 7 * 24 * 60 * 60 * 1000 /
+        // });
 
-        res.status(200).json({ accessToken });
+        res.status(200).json({ accessToken, refreshToken });
     } catch (error) {
         console.error(error)
 
@@ -58,7 +60,7 @@ export async function login(req: Request, res: Response) {
 
 export async function refresh(req: Request, res: Response) {
     try {
-        const refreshToken: string = req.cookies.refreshToken;
+        const { refreshToken } = req.body;
 
         if (!refreshToken) {
             res.status(401).json({ message: "No refresh token" });
@@ -87,7 +89,7 @@ export async function refresh(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
     try {
-        const refreshToken: string = req.cookies.refreshToken;
+        const { refreshToken } = req.body;
 
         if (refreshToken) {
             await authService.removeRefreshToken(refreshToken);

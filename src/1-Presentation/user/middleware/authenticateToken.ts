@@ -14,12 +14,10 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 
     jwt.verify(token, ACCESS_SECRET, (err, decoded) => {
         if (err) {
-            res.status(403).json({ message: "Invalid or expired token." });
+            res.status(401).json({ message: "Invalid or expired token." });
             return
         }
 
-        // نضمن إن التايب معروف
-        // decoded هي { userId, roles }
         const payload = decoded as jwt.JwtPayload & {
             userId: number;
             roles: string[];
