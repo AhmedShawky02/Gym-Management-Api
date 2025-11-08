@@ -5,7 +5,7 @@ import { IPaymentLinkResponse } from '../../../models/payment/IPaymentLinkRespon
 import { ICreatePaymentRequest } from '../../../models/payment/ICreatePaymentRequest.js';
 import { IPaymentBasicDto } from '../../../models/payment/IPaymentBasicDto.js';
 
-export async function createPayment(req: Request, res: Response) {
+export async function createPaymentLinkToBookingOrPackage(req: Request, res: Response) {
     try {
         const bodyData: ICreatePaymentRequest = req.body;
 
@@ -16,9 +16,34 @@ export async function createPayment(req: Request, res: Response) {
             return;
         }
 
-        const paymentLink: IPaymentLinkResponse = await PaymentService.createPaymentLink(bodyData, userId);
+        const paymentLink: IPaymentLinkResponse = await PaymentService.createPaymentLinkToBookingOrPackage(bodyData, userId);
 
         res.status(201).json({ URL: paymentLink.url, Data: paymentLink.paymentData });
+    } catch (error) {
+        console.error(error);
+
+        if (error instanceof HttpError) {
+            res.status(error.status).json({ message: error.message });
+            return;
+        }
+
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+export async function createPaymentLinkToCart(req: Request, res: Response) {
+    try {
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        const paymentLink: IPaymentLinkResponse = await PaymentService.createPaymentLinkToCart(userId);
+
+        // res.status(201).json({ URL: paymentLink.url, Data: paymentLink.paymentData });
+        res.status(201).json(paymentLink);
     } catch (error) {
         console.error(error);
 

@@ -8,7 +8,7 @@ import { IPaymentsDb } from "../../models/payment/IPaymentsDb.js";
 import { IPaymentStatus } from "../../models/payment/IPaymentStatus.js";
 import { ICreatePaymentItem } from "../../models/payment/ICreatePaymentItem.js";
 
-export async function createPaymentLink(bodyData: ICreatePaymentRequest, user: IUsersDto, allPrice: number): Promise<IPaymobPaymentResult> {
+export async function createPaymentLink(user: IUsersDto, allPrice: number): Promise<IPaymobPaymentResult> {
     // Step 1 - Authenticate with Paymob
     const authResponse = await axios.post<{ token: string }>('https://accept.paymob.com/api/auth/tokens', {
         api_key: process.env.PAYMOB_API_KEY
@@ -55,13 +55,36 @@ export async function createPaymentLink(bodyData: ICreatePaymentRequest, user: I
     return { paymentKey, orderId };
 }
 
-export async function createPayment(orderId: number, bodyData: ICreatePaymentRequest, user: IUsersDto, allPrice: number): Promise<ICreatePayment> {
+export async function createPaymentLinkToBookingOrPackage(orderId: number, bodyData: ICreatePaymentRequest, user: IUsersDto, allPrice: number): Promise<ICreatePayment> {
     return await prisma.payments.create({
         data: {
             user_id: user.id,
             package_id: bodyData.packageId,
             booking_id: bodyData.bookingId,
-            cart_id: bodyData.cart_id,
+            amount: allPrice,
+            status_id: 1, // Pending
+            paymob_order_id: orderId,
+            paid_at: new Date()
+        },
+        select: {
+            id: true,
+            user_id: true,
+            package_id: true,
+            booking_id: true,
+            cart_id: true,
+            amount: true,
+            status_id: true,
+            paymob_order_id: true,
+            paid_at: true,
+        }
+    })
+}
+
+export async function createPaymentLinkToCart(orderId: number, cartId: number, user: IUsersDto, allPrice: number): Promise<ICreatePayment> {
+    return await prisma.payments.create({
+        data: {
+            user_id: user.id,
+            cart_id: cartId,
             amount: allPrice,
             status_id: 1, // Pending
             paymob_order_id: orderId,

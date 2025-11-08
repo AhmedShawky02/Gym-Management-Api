@@ -20,7 +20,7 @@ export const ValidationAddToCart = checkSchema({
     },
     quantity: {
         in: ['body'],
-        isInt: { options: { min: 1 } },
+        isInt: { options: { min: 0 } },
         toInt: true,
         errorMessage: "quantity must be a positive number"
     }

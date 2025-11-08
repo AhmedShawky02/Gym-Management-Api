@@ -61,7 +61,6 @@ export async function updateMyProfile(req: Request, res: Response) {
             imageUrl = uploadResult.url;
         }
 
-
         const userData: IUpdateUserRequest = req.body
 
         if (!userData || Object.keys(userData).length === 0) {

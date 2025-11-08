@@ -24,7 +24,7 @@ export async function addSupplement(req: Request, res: Response) {
 
         const data: ICreateSupplementRequest = req.body;
 
-        const supplement: any = await SupplementService.addSupplement(data, imageUrl);
+        const supplement: ISupplementDto = await SupplementService.addSupplement(data, imageUrl);
 
         res.status(201).json(supplement);
     } catch (error) {

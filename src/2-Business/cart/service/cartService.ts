@@ -45,7 +45,7 @@ export async function addToCart(userId: number, data: IAddToCart): Promise<ICart
                 throw new HttpError("Not enough stock available", 400);
             }
 
-            const updated: ICartItem = await CartRepo.updateCartItem(existingItem.id, data.quantity + existingItem.quantity);
+            const updated: ICartItem = await CartRepo.updateCartItem(existingItem.id, totalQuantity);
 
             return mapCartItemToDto(updated, supplement);
         }

@@ -5,7 +5,8 @@ import { ValidationCreatePayment, validate } from "../middleware/paymentValidati
 const router: Router = Router();
 
 // User: make payment (with Stripe integration)
-router.post("/", ValidationCreatePayment, validate, PaymentController.createPayment);
+router.post("/booking_Package", ValidationCreatePayment, validate, PaymentController.createPaymentLinkToBookingOrPackage);
+router.post("/cart", ValidationCreatePayment, validate, PaymentController.createPaymentLinkToCart);
 
 // User: view my payments
 router.get("/", PaymentController.getMyPayments);

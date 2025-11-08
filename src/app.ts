@@ -67,7 +67,7 @@ app.use("/api/user/profile", authenticateToken, authorizeRoles(["User"]), authen
 app.use("/api/user/review", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, userReviewRoutes) //----------------------✅
 app.use("/api/user/booking", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, bookingUserRoutes); //-------------------✅
 app.use("/api/user/payment", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, userPaymentRoutes); //-------------------✅
-app.use("/api/user/cart", authenticateToken, authorizeRoles(["User"]), authenticatedLimiter, cartRoutes); //-----------------------------✅
+app.use("/api/user/cart", authenticateToken, authorizeRoles(["User"]), cartRoutes); //-----------------------------✅
 
 //Admin
 app.use("/api/admin/payment", authenticateToken, authorizeRoles(["Admin"]), authenticatedLimiter, adminPaymentRoutes); //----------------✅

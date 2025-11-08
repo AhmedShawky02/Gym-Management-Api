@@ -21,7 +21,7 @@ import { ISupplementModel } from "../../../models/supplement/ISupplementModel.js
 import { ICart } from "../../../models/cart/ICart.js";
 import { ICartItem } from "../../../models/cart/ICartItem.js";
 
-export async function createPaymentLink(bodyData: ICreatePaymentRequest, userId: number): Promise<IPaymentLinkResponse> {
+export async function createPaymentLinkToBookingOrPackage(bodyData: ICreatePaymentRequest, userId: number): Promise<IPaymentLinkResponse> {
     let allPrice: number = 0
     const user: IUsersDto | null = await UserRepo.getUserById(userId);
 
@@ -29,8 +29,8 @@ export async function createPaymentLink(bodyData: ICreatePaymentRequest, userId:
         throw new HttpError("Unauthorized.", 401);
     }
 
-    if (!bodyData.bookingId && !bodyData.packageId && !bodyData.cart_id) {
-        throw new HttpError("At least one of bookingId, packageId, or cart_id is required to create a payment.", 400);
+    if (!bodyData.bookingId && !bodyData.packageId) {
+        throw new HttpError("At least one of bookingId or packageId required to create a payment.", 400);
     }
 
     if (bodyData.bookingId) {
@@ -57,52 +57,72 @@ export async function createPaymentLink(bodyData: ICreatePaymentRequest, userId:
         allPrice += Number(Package.price)
     }
 
-    if (bodyData.cart_id) {
-
-        const cart: ICart | null = await CartRepo.getCartById(bodyData.cart_id)
-
-        if (!cart) {
-            throw new HttpError("Invalid cartId.", 400);
-        }
-
-        const items: ICartItem[] = await CartRepo.getAllCartItemByCardId(cart.id)
-
-        if (!items || items.length === 0) {
-            throw new HttpError("Cart is empty.", 400);
-        }
-
-
-        await Promise.all(items.map(async (item) => {
-
-            if (item.product_type === "supplement") {
-                const supplement: ISupplementModel | null = await SupplementRepo.getSupplementById(item.product_id);
-
-                if (!supplement) {
-                    throw new HttpError("Supplement not found.", 404);
-                }
-
-                allPrice += Number(supplement.price) * item.quantity;
-            }
-        }));
-    }
-
     if (allPrice <= 0) {
         throw new HttpError("All Price must be greater than 0", 400);
     }
 
-    const paymentToken: IPaymobPaymentResult = await PaymentRepo.createPaymentLink(bodyData, user, allPrice);
+    const paymentToken: IPaymobPaymentResult = await PaymentRepo.createPaymentLink(user, allPrice);
 
     if (!paymentToken) {
         throw new HttpError("Token creation error", 400);
     }
 
-    const paymentData: ICreatePayment = await PaymentRepo.createPayment(paymentToken.orderId, bodyData, user, allPrice)
+    const paymentData: ICreatePayment = await PaymentRepo.createPaymentLinkToBookingOrPackage(paymentToken.orderId, bodyData, user, allPrice)
 
     return {
         url: `https://accept.paymob.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${paymentToken.paymentKey}`,
         paymentData
     };
 }
+
+export async function createPaymentLinkToCart(userId: number) {
+    const user: IUsersDto | null = await UserRepo.getUserById(userId);
+
+    if (!user) {
+        throw new HttpError("Unauthorized.", 401);
+    }
+
+    const Cart: ICart | null = await CartRepo.getCartByUserId(userId);
+
+    if (!Cart) {
+        throw new HttpError("Cart not Found.", 404);
+    }
+
+    const items: ICartItem[] = await CartRepo.getAllCartItemByCardId(Cart.id)
+
+    if (!items || items.length === 0) {
+        throw new HttpError("Cart is empty.", 400);
+    }
+
+    let allPrice = 0;
+    await Promise.all(items.map(async (item) => {
+
+        if (item.product_type === "supplement") {
+            const supplement: ISupplementModel | null = await SupplementRepo.getSupplementById(item.product_id);
+
+            if (!supplement) {
+                throw new HttpError("Supplement not found.", 404);
+            }
+
+            allPrice += Number(supplement.price) * item.quantity;
+        }
+
+    }));
+
+    const paymentToken: IPaymobPaymentResult = await PaymentRepo.createPaymentLink(user, allPrice);
+
+    if (!paymentToken) {
+        throw new HttpError("Token creation error", 400);
+    }
+
+    const paymentData: ICreatePayment = await PaymentRepo.createPaymentLinkToCart(paymentToken.orderId, Cart.id, user, allPrice)
+
+    return {
+        url: `https://accept.paymob.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${paymentToken.paymentKey}`,
+        paymentData
+    };
+}
+
 
 export async function handlePaymobWebhook(webhookData: IPaymobWebhookDto) {
     const transactionId = webhookData.obj.id;
